@@ -34,7 +34,7 @@ Install for Development
 -----------------------
 
 #. Install and become familiar with `conda/Anaconda <https://conda.io/docs/user-guide/install/index.html>`_.
-#. Fork the repository to your github by clicking `here <https://github.com/ScottSnapperLab/db_tools#fork-destination-box>`_.
+#. Fork the repository to your github by clicking the "Fork" button at the top right of this project's github page.
 #. Clone your forked repo to your dev computer: ``git clone git@github.com:YOUR_GITHUB_NAME/db_tools.git``.
 #. Enter your freshly cloned Database Tools directory: ``cd db_tools``.
 #. Run ``make help`` to see most of the ``make`` targets available.
