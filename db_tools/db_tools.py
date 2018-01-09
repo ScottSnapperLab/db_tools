@@ -8,3 +8,7 @@ def test_func():
 
 def new_func():
     pass
+
+
+def read_redcap():
+    pass
