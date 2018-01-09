@@ -34,8 +34,8 @@ Install for Development
 -----------------------
 
 #. Install and become familiar with `conda/Anaconda <https://conda.io/docs/user-guide/install/index.html>`_.
-#. Fork the repository to your github by clicking `here <https://github.com/xguse/table_enforcer#fork-destination-box>`_.
-#. Clone your forked repo to your dev computer: ``git clone git@github.com:YOUR_GITHUB_NAME/table_enforcer.git``.
+#. Fork the repository to your github by clicking `here <https://github.com/ScottSnapperLab/db_tools#fork-destination-box>`_.
+#. Clone your forked repo to your dev computer: ``git clone git@github.com:YOUR_GITHUB_NAME/db_tools.git``.
 #. Enter your freshly cloned Database Tools directory: ``cd db_tools``.
 #. Run ``make help`` to see most of the ``make`` targets available.
 #. Running ``make install``. This creates and registers a ``conda`` environment named db_tools. Into that conda environment, it installs all of the needed libraries to run and develop Database Tools.
