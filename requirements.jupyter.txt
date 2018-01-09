@@ -1,0 +1,5 @@
+jupyter
+jupyterlab
+jupyter_nbextensions_configurator
+widgetsnbextension
+jupyter_contrib_nbextensions

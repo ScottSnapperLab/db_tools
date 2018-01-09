@@ -1,0 +1,10 @@
+click
+pandas
+numpy
+munch
+seaborn
+numexpr
+numpy
+xlrd
+xlwt
+tqdm>=4.10.0
