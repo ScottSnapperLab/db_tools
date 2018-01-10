@@ -179,7 +179,7 @@ jupyter-lab:
 	jupyter lab --notebook-dir jupyter
 
 ## uninstalls virtual environments and requirements
-uninstall-conda-env: error_if_active_conda_env
+uninstall: error_if_active_conda_env
 	source activate $(CONDA_ENV_NAME); \
 	rm -rf $$(jupyter --data-dir)/kernels/$(CONDA_ENV_NAME); \
 	rm -rf $(CONDA_ENV_DIR)
