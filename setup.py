@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """The setup script."""
 
 from setuptools import setup, find_packages
@@ -41,8 +40,9 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = filter_req_paths(paths=[HOME_DIR / "requirements.txt",
-                                       HOME_DIR / "requirements.pip.txt"], func=is_pipable)
+requirements = filter_req_paths(
+    paths=[HOME_DIR / "requirements.txt", HOME_DIR / "requirements.pip.txt"], func=is_pipable
+)
 
 setup_requirements = ["pytest-runner"]
 
@@ -50,18 +50,15 @@ test_requirements = test_requirements = ["pytest"]
 
 setup(
     name='db_tools',
-    version='0.0.2',
-    description="A set of command line executable and script importable tools to aid the Snapper Lab in managing and combining RedCap, FreezerPro, and other databases.",
+    version='0.0.4',
+    description=
+    "A set of command line executable and script importable tools to aid the Snapper Lab in managing and combining RedCap, FreezerPro, and other databases.",
     long_description=readme + '\n\n' + history,
     author="Gus Dunn",
     author_email='w.gus.dunn@gmail.com',
     url='https://github.com/xguse/db_tools',
     packages=find_packages(include=['db_tools']),
-    entry_points={
-        'console_scripts': [
-            'db_tools=db_tools.cli:main'
-        ]
-    },
+    entry_points={'console_scripts': ['db_tools=db_tools.cli:main']},
     include_package_data=True,
     install_requires=requirements,
     license="MIT license",
