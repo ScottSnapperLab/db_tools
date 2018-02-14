@@ -1,3 +1,3 @@
 logzero
 recommonmark
-git+git://github.com/xguse/table_enforcer@v0.1.4#egg=table_enforcer # not_pipable
+table_enforcer
