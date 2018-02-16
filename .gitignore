@@ -71,9 +71,6 @@ docs/_build/
 # PyBuilder
 target/
 
-# Pycharm
-.idea
-
 # IDEs vscode
 .vscode
 .idea
