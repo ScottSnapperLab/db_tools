@@ -57,7 +57,7 @@ setup(
     author="Gus Dunn",
     author_email='w.gus.dunn@gmail.com',
     url='https://github.com/xguse/db_tools',
-    packages=find_packages(include=['db_tools']),
+    packages=find_packages(),
     entry_points={'console_scripts': ['db_tools=db_tools.cli:main']},
     include_package_data=True,
     install_requires=requirements,
