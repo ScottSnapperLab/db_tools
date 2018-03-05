@@ -1,5 +1,8 @@
 """Provide top level code in support of extract-transform-load type operations."""
 
+def get_failed_values(df, col):
+    failed = col.validate(col.recode(df), failed_only=True)
+    return df[col.name].iloc[failed.index]
 
 def is_subset(x, ref_set):
     """Return ``True`` if ``x`` is a subset of ``ref_set``."""
