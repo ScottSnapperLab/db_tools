@@ -140,11 +140,11 @@ def radio_dropdown_column_factory(ddict, ddict_col):
     return build_column(name=ddict_col, labels=label_mapper.values())
 
 
-def yesno_column_factory(column_name):
+def yesno_column_factory(ddict_col):
     """Return a fully initiated "yesno" type column object.
 
     Args:
-        column_name (str): The name of the yesno-type column to process.
+        ddict_col (str): The name of the yesno-type column to process.
     """
 
     def valid_values(series):
@@ -164,7 +164,7 @@ def yesno_column_factory(column_name):
     }
 
     return Column(
-        name=column_name,
+        name=ddict_col,
         dtype=(str, float),
         unique=False,
         validators=[valid_values],
