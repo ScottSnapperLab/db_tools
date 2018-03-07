@@ -117,7 +117,7 @@ def radio_dropdown_column_factory(ddict, ddict_col):
         """Return initiated Column obj."""
 
         def valid_values(series):
-            valid = list(labels) + [np.nan]
+            valid = list(labels) + [None]
             return series.apply(is_subset, ref_set=valid)
 
         def translate_column(series):
@@ -128,14 +128,14 @@ def radio_dropdown_column_factory(ddict, ddict_col):
 
         return Column(
             name=name,
-            dtype=(str, float),
+            dtype=(str, type(None)),
             unique=False,
             validators=[valid_values],
             recoders=[translate_column],
         )
 
     label_mapper = ccs_labels_to_mapper(ddict[ddict_col])
-    label_mapper.update({np.nan: np.nan})
+    label_mapper.update({np.nan: None})
 
     return build_column(name=ddict_col, labels=label_mapper.values())
 
@@ -165,7 +165,7 @@ def yesno_column_factory(ddict_col):
 
     return Column(
         name=ddict_col,
-        dtype=(str, float),
+        dtype=(str, type(None)),
         unique=False,
         validators=[valid_values],
         recoders=[translate_column],
