@@ -32,3 +32,13 @@ def valid_float(series):
                 return False
 
     return series.astype(str).apply(is_float)
+
+
+def integer(series):
+    '''test that not None-type data items are only integers'''
+    return series.astype(str).str.isnumeric()
+
+def seven_chs(series):
+    '''test that not None-type data items are seven characters long'''
+    return series.str.len() == 7
+
