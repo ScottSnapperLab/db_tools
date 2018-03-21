@@ -4,7 +4,7 @@
 # Imports
 import pandas as pd
 
-from . import time_string_to_time
+from db_tools.etl import time_string_to_time
 
 
 def nan_to_none(series):
