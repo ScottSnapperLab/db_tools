@@ -4,6 +4,8 @@
 # Imports
 import pandas as pd
 
+from . import time_string_to_time
+
 
 def nan_to_none(series):
     """Return series after converting NaN-type objects to ``None``."""
@@ -37,3 +39,9 @@ def setify_drop_nones(series):
         return x
 
     return series.apply(lambda x: set(x)).apply(drop_nones).apply(list)
+
+
+def to_hour_minute(series):
+    """Convert a string to a time object."""
+
+    return series.apply(time_string_to_time)
