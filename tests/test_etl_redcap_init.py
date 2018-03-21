@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from table_enforcer import Column, CompoundColumn
-import db_tools.errors as e
+# import db_tools.errors as e
 from db_tools.etl import redcap
 
 from .helpers import checking_jsons as json
@@ -24,7 +24,13 @@ def dd_json_path():
 @pytest.fixture
 def dd_df(dd_csv_path):
     """Provide loaded data_dict as dataframe."""
-    return redcap.load_data_dict(dd_csv_path)
+    return redcap.loaders.load_data_dict(dd_csv_path)
+
+
+@pytest.fixture
+def dd_column_info(dd_df):
+    """Provide digested data_dict as column_infos."""
+    return redcap.digest_ddict(dd_df)
 
 
 ###################################
@@ -32,7 +38,7 @@ def dd_df(dd_csv_path):
 
 def test_load_data_dict(dd_csv_path, dd_json_path):
     """Ensure that the loaded data_dict looks as it should."""
-    dd = redcap.load_data_dict(dd_csv_path).reset_index()
+    dd = redcap.loaders.load_data_dict(dd_csv_path).reset_index()
 
     assert json.check_json_string(df=dd, json_str=dd_json_path)
 
@@ -52,9 +58,9 @@ def test_ccs_labels_to_mapper(dd_df):
     assert value_mapper_ref == value_mapper
 
 
-def test_checkbox_column_factory(dd_df):
+def test_checkbox_column_factory(dd_column_info):
     """Ensure that checkbox_column_factory produces expected results."""
-    checkbox = redcap.checkbox_column_factory(ddict=dd_df, ddict_col="sampletype")
+    checkbox = redcap.checkbox_column_factory(column_info=dd_column_info["sampletype"])
 
     # is correct type
     assert isinstance(checkbox, CompoundColumn)
@@ -81,10 +87,10 @@ def test_checkbox_column_factory(dd_df):
     assert [col.unique for col in checkbox.output_columns] == [False]
 
 
-def test_radio_dropdown_column_factory(dd_df):
+def test_radio_dropdown_column_factory(dd_column_info):
     """Ensure that radio_dropdown_column_factory produces expected results."""
-    dropdown = redcap.radio_dropdown_column_factory(ddict=dd_df, ddict_col="meddraae1")
-    radio = redcap.radio_dropdown_column_factory(ddict=dd_df, ddict_col="visitcategory")
+    dropdown = redcap.radio_dropdown_column_factory(dd_column_info["meddraae1"])
+    radio = redcap.radio_dropdown_column_factory(dd_column_info["visitcategory"])
 
     # is correct type
     assert isinstance(dropdown, Column)
@@ -103,9 +109,9 @@ def test_radio_dropdown_column_factory(dd_df):
     assert not radio.unique
 
 
-def test_yesno_column_factory(dd_df):
+def test_yesno_column_factory(dd_column_info):
     """Ensure that yesno_column_factory produces expected results."""
-    yesno = redcap.yesno_column_factory(ddict_col="consent")
+    yesno = redcap.yesno_column_factory(dd_column_info["consent"])
     assert yesno.dtype == (str, type(None))
     assert yesno.name == "consent"
     assert not yesno.unique  # should be False
