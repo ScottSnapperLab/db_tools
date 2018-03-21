@@ -130,6 +130,7 @@ dist: clean
 ## installs virtual environments and requirements
 install:
 	pipenv install
+	pipenv lock -r > requirements.txt
 	$(RUN) pip install -e .
 	$(RUN) python -m ipykernel install --sys-prefix --name $(CONDA_ENV_NAME) --display-name "$(CONDA_ENV_NAME)"
 
