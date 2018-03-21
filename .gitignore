@@ -1,3 +1,6 @@
+# ignore standard req files since we use pipenv
+requirements*.txt
+
 # binary document-type files
 *.doc
 *.docx
