@@ -12,6 +12,9 @@ CONDA_ROOT = $(shell conda info --root)
 CONDA_ENV_DIR = $(CONDA_ROOT)/envs/$(CONDA_ENV_NAME)
 CONDA_ENV_PY = $(CONDA_ENV_DIR)/bin/python
 
+
+RUN = pipenv run
+
 ifeq (,$(shell which conda))
 HAS_CONDA=False
 else
@@ -74,8 +77,7 @@ clean-test:
 
 ## check typing with mypy
 mypy:
-	source activate $(CONDA_ENV_NAME) && \
-	mypy --ignore-missing-imports $(PACKAGE_NAME)
+	$(RUN) mypy --ignore-missing-imports $(PACKAGE_NAME)
 
 ## remove docs artifacts
 clean-docs:
@@ -83,64 +85,53 @@ clean-docs:
 
 ## check style with flake8
 lint:
-	source activate $(CONDA_ENV_NAME) && \
-	flake8 $(PACKAGE_NAME)
+	$(RUN) flake8 $(PACKAGE_NAME)
 
 ## run tests quickly with the default Python
 test:
-	source activate $(CONDA_ENV_NAME) && \
-	pytest
+	$(RUN) pytest
 
 
 ## run tests on every Python version with tox
 test-all:
-	source activate $(CONDA_ENV_NAME) && \
-	tox
+	$(RUN) tox
 
 ## check code coverage quickly with the default Python
 coverage:
-	source activate $(CONDA_ENV_NAME) && \
-	coverage run --source $(PACKAGE_NAME) -m pytest && \
-	coverage report -m && \
-	coverage html && \
-	$(BROWSER) htmlcov/index.html
+	$(RUN) coverage run --source $(PACKAGE_NAME) -m pytest && \
+	$(RUN) coverage report -m && \
+	$(RUN) coverage html && \
+	$(RUN) $(BROWSER) htmlcov/index.html
 
 ## generate Sphinx HTML documentation, including API docs
 docs:
 	rm -f docs/$(PACKAGE_NAME).rst
 	rm -f docs/$(PACKAGE_NAME).*.rst
 	rm -f docs/modules.rst
-	source activate $(CONDA_ENV_NAME) && \
-	$(MAKE) -C docs clean && \
-	$(MAKE) -C docs html && \
-	$(BROWSER) docs/_build/html/index.html
+	$(RUN) $(MAKE) -C docs clean && \
+	$(RUN) $(MAKE) -C docs html && \
+	$(RUN) $(BROWSER) docs/_build/html/index.html
 
 ## compile the docs watching for changes
 servedocs: docs
-	source activate $(CONDA_ENV_NAME) && \
-	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
+	$(RUN) watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
 
 ## package and upload a release
 release: clean
-	source activate $(CONDA_ENV_NAME) && \
-	python setup.py sdist upload && \
-	python setup.py bdist_wheel upload
+	$(RUN) python setup.py sdist upload && \
+	$(RUN) python setup.py bdist_wheel upload
 
 ## builds source and wheel package
 dist: clean
-	source activate $(CONDA_ENV_NAME) && \
-	python setup.py sdist && \
-	python setup.py bdist_wheel && \
+	$(RUN) python setup.py sdist
+	$(RUN) python setup.py bdist_wheel
 	ls -l dist
 
 ## installs virtual environments and requirements
-install: clean install-conda-env install-jupyter-kernel install-pip-reqs install-dev-reqs install-pip-editable
-
-install-after-conda: install-jupyter-kernel install-pip-reqs install-dev-reqs install-pip-editable
-
-install-pip-editable:
-	source activate $(CONDA_ENV_NAME) && \
-	pip install -e .
+install:
+	pipenv install
+	$(RUN) pip install -e .
+	$(RUN) python -m ipykernel install --sys-prefix --name $(CONDA_ENV_NAME) --display-name "$(CONDA_ENV_NAME)"
 
 
 error_if_active_conda_env:
@@ -149,40 +140,28 @@ ifeq (True,$(PROJECT_CONDA_ACTIVE))
 endif
 
 
-install-conda-env:
-	conda create -n $(CONDA_ENV_NAME) 'python >=3.6' --file requirements.txt --yes
-
-install-pip-reqs:
-	source activate $(CONDA_ENV_NAME) && \
-	pip install -r requirements.pip.txt && \
-	pip install -r requirements.dev.pip.txt
-
-
-install-jupyter-kernel:
-	source activate $(CONDA_ENV_NAME) && \
-	conda install --file requirements.jupyter.txt --yes && \
-	python -m ipykernel install --sys-prefix --name $(CONDA_ENV_NAME) --display-name "$(CONDA_ENV_NAME)"
-
-install-dev-reqs:
-	source activate $(CONDA_ENV_NAME) && \
-	conda install --file requirements.dev.txt --yes
+install-env:
+	pipenv install --three -r requirements.txt
+	pipenv install -r requirements.pip.txt
+	pipenv install -r requirements.jupyter.txt
+	pipenv install --dev -r requirements.dev.pip.txt
+	pipenv install --dev -r requirements.dev.txt
+	$(RUN) pip install -e .
+	$(RUN) python -m ipykernel install --sys-prefix --name $(CONDA_ENV_NAME) --display-name "$(CONDA_ENV_NAME)"
 
 
 ## serve the jupyter notebook
 jupyter-notebook:
-	source activate $(CONDA_ENV_NAME) && \
-	jupyter notebook --notebook-dir jupyter
+	$(RUN) jupyter notebook --notebook-dir jupyter
 
 ## serve the jupyter lab
 jupyter-lab:
-	source activate $(CONDA_ENV_NAME) && \
-	jupyter lab --notebook-dir jupyter
+	$(RUN) jupyter lab --notebook-dir jupyter
 
 ## uninstalls virtual environments and requirements
 uninstall: error_if_active_conda_env
-	source activate $(CONDA_ENV_NAME); \
-	rm -rf $$(jupyter --data-dir)/kernels/$(CONDA_ENV_NAME); \
-	rm -rf $(CONDA_ENV_DIR)
+	$(RUN) rm -rf $$(jupyter --data-dir)/kernels/$(CONDA_ENV_NAME)
+	pipenv --rm
 
 ## alias to test-all (purpose: minimal req for submitting a pull request)
 pull-req-check: test-all
