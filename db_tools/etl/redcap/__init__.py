@@ -11,11 +11,12 @@ import numpy as np
 
 from box import Box
 
+from dataclasses import dataclass
+
 from table_enforcer import Column, CompoundColumn, BaseColumn
 
 import db_tools.etl.common as common
 from db_tools.etl import is_subset
-
 from db_tools.etl import recast
 
 from . import loaders
@@ -229,7 +230,7 @@ def yesno_column_factory(column_info):
     )
 
 
-#TODO: Add custom range validators to column_object if the data is provided in the data_dict
+# TODO: Add custom range validators to column_object if the data is provided in the data_dict
 @dataclass(init=False)
 class RedCapColumnInfo(object):
     """FILL THIS IN."""
