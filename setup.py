@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 """The setup script."""
 
 from setuptools import setup, find_packages
@@ -33,6 +34,9 @@ def is_pipable(line):
     else:
         return True
 
+def clean_reqs(reqs):
+    return [req.split(" --hash")[0] for req in reqs]
+
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -40,14 +44,12 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = filter_req_paths(
-    paths=[HOME_DIR / "requirements.txt", HOME_DIR / "requirements.pip.txt"], func=is_pipable
-)
+requirements = filter_req_paths(paths=[HOME_DIR / "requirements.txt"], func=is_pipable)
+requirements = clean_reqs(requirements)
 
 setup_requirements = ["pytest-runner"]
 
 test_requirements = test_requirements = ["pytest"]
-
 setup(
     name='db_tools',
     version='0.1.0',
