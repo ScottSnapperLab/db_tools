@@ -1,0 +1,57 @@
+[[source]]
+
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+
+[packages]
+
+click = "*"
+pandas = "*"
+numpy = "*"
+munch = "*"
+seaborn = "*"
+numexpr = "*"
+xlrd = "*"
+xlwt = "*"
+tqdm = "*"
+logzero = "*"
+recommonmark = "*"
+table-enforcer = "*"
+dataclasses = "*"
+jupyter = "*"
+jupyterlab = "*"
+widgetsnbextension = "*"
+jupyter-contrib-nbextensions = "*"
+rope = "*"
+pip = "*"
+pendulum = "*"
+
+
+[dev-packages]
+
+mypy = "*"
+bumpversion = "*"
+watchdog = "*"
+"flake8" = "*"
+tox = "*"
+coverage = "*"
+sphinx = "*"
+pytest = "*"
+pytest-runner = "*"
+pylama = "*"
+sphinx-rtd-theme = "*"
+pydocstyle = "*"
+pylint = "*"
+yapf = "*"
+
+
+[requires]
+
+python_version = "3.6"
+
+
+[pipenv]
+
+keep_outdated = true

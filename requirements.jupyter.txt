@@ -1,4 +1,0 @@
-jupyter
-jupyterlab
-widgetsnbextension
-jupyter_contrib_nbextensions
