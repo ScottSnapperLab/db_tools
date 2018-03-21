@@ -140,16 +140,6 @@ ifeq (True,$(PROJECT_CONDA_ACTIVE))
 endif
 
 
-install-env:
-	pipenv install --three -r requirements.txt
-	pipenv install -r requirements.pip.txt
-	pipenv install -r requirements.jupyter.txt
-	pipenv install --dev -r requirements.dev.pip.txt
-	pipenv install --dev -r requirements.dev.txt
-	$(RUN) pip install -e .
-	$(RUN) python -m ipykernel install --sys-prefix --name $(CONDA_ENV_NAME) --display-name "$(CONDA_ENV_NAME)"
-
-
 ## serve the jupyter notebook
 jupyter-notebook:
 	$(RUN) jupyter notebook --notebook-dir jupyter
