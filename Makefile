@@ -8,18 +8,18 @@ SHELL := /bin/bash
 
 PACKAGE_NAME = db_tools
 CONDA_ENV_NAME = $(PACKAGE_NAME)
-CONDA_ROOT = $(shell conda info --root)
+# CONDA_ROOT = $(shell conda info --root)
 CONDA_ENV_DIR = $(CONDA_ROOT)/envs/$(CONDA_ENV_NAME)
 CONDA_ENV_PY = $(CONDA_ENV_DIR)/bin/python
 
 
 RUN = pipenv run
 
-ifeq (,$(shell which conda))
-HAS_CONDA=False
-else
-HAS_CONDA=True
-endif
+# ifeq (,$(shell which conda))
+# HAS_CONDA=False
+# else
+# HAS_CONDA=True
+# endif
 
 
 ifeq (${CONDA_DEFAULT_ENV},$(CONDA_ENV_NAME))
