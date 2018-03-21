@@ -16,7 +16,7 @@ from table_enforcer import Column, CompoundColumn, BaseColumn
 import db_tools.etl.common as common
 from db_tools.etl import is_subset
 
-from dataclasses import dataclass
+from db_tools.etl import recast
 
 from . import loaders
 from . import recode
@@ -281,21 +281,21 @@ class RedCapColumnInfo(object):
             return robust_casting_func
 
         cast_map = {
-            "time": build_robust_casting_func(lambda txt: pen.parse(txt).time()),
-            "alpha_only": build_robust_casting_func(str),
-            "date_ymd": build_robust_casting_func(lambda txt: pen.parse(txt).date()),
-            "date_mdy": build_robust_casting_func(lambda txt: pen.parse(txt).date()),
-            "date_dmy": build_robust_casting_func(lambda txt: pen.parse(txt).date()),
-            "integer": build_robust_casting_func(int),
-            "number": build_robust_casting_func(float),
-            "number_1dp": build_robust_casting_func(float),
-            "number_4dp": build_robust_casting_func(float),
-            np.nan: build_robust_casting_func(str),
+            "time": build_robust_casting_func(recast.as_time),
+            "alpha_only": build_robust_casting_func(recast.as_string),
+            "date_ymd": build_robust_casting_func(recast.as_date),
+            "date_mdy": build_robust_casting_func(recast.as_date),
+            "date_dmy": build_robust_casting_func(recast.as_date),
+            "integer": build_robust_casting_func(recast.as_integer),
+            "number": build_robust_casting_func(recast.as_float),
+            "number_1dp": build_robust_casting_func(recast.as_float),
+            "number_4dp": build_robust_casting_func(recast.as_float),
+            np.nan: build_robust_casting_func(recast.as_string),
         }
 
-        recast = cast_map[self.validation_kind]
-        self.validation_min = recast(self.validation_min)
-        self.validation_max = recast(self.validation_max)
+        recast_func = cast_map[self.validation_kind]
+        self.validation_min = recast_func(self.validation_min)
+        self.validation_max = recast_func(self.validation_max)
 
     def _spawn_column_object(self):
         """Create and store the Column Object."""
