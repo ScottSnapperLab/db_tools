@@ -1,14 +1,22 @@
 """Provide code to ETL redcap data dumps."""
+import typing as typ
 from collections import OrderedDict
+import datetime as dt
+import pendulum as pen
+
+from logzero import logger as log
+
 import pandas as pd
 import numpy as np
 
 from box import Box
 
-from table_enforcer import Column, CompoundColumn
+from table_enforcer import Column, CompoundColumn, BaseColumn
 
-from db_tools.etl.common.recode import to_one_or_zero, setify_drop_nones
+import db_tools.etl.common as common
 from db_tools.etl import is_subset
+
+from dataclasses import dataclass
 
 from . import loaders
 from . import recode
@@ -54,12 +62,11 @@ def ccs_labels_to_mapper(series):
         return None
 
 
-def checkbox_column_factory(ddict, ddict_col):
+def checkbox_column_factory(column_info):
     """Return a fully populated compound column object based on the defintion in the ddict.
 
     Args:
-        ddict (DataFrame): A redcap data-dict loaded with ``load_data_dict``.
-        ddict_col (str): The name of the checkbox-type column to process.
+        column_info (RedCapColumnInfo): A RedCapColumnInfo object.
     """
 
     # ### Transformation function
@@ -89,11 +96,16 @@ def checkbox_column_factory(ddict, ddict_col):
             return series.apply(rcode)
 
         return Column(
-            name=f"{ddict_col}___{col_n}",
+            name=f"{column_info.name}___{col_n}",
             dtype=(str, type(None)),
             unique=False,
-            validators=[valid_values],
-            recoders=[to_one_or_zero, translate_column]
+            validators=[
+                valid_values,
+            ],
+            recoders=[
+                common.recode.to_one_or_zero,
+                translate_column,
+            ]
         )
 
     # ### Function to generate output columns
@@ -108,11 +120,16 @@ def checkbox_column_factory(ddict, ddict_col):
             name=name,
             dtype=list,
             unique=False,
-            validators=[valid_values],
-            recoders=[setify_drop_nones],
+            validators=[
+                valid_values,
+            ],
+            recoders=[
+                common.recode.setify_drop_nones,
+            ],
         )
 
-    label_mapper = ccs_labels_to_mapper(ddict[ddict_col])
+    label_mapper = {}
+    label_mapper.update(column_info.options_labels)
 
     # Make input columns
     input_cols = []
@@ -120,22 +137,24 @@ def checkbox_column_factory(ddict, ddict_col):
         input_cols.append(input_column(col_n, label))
 
     # Make output column
-    output_cols = [output_column(name=ddict_col, labels=label_mapper.values())]
+    output_cols = [output_column(name=column_info.name, labels=label_mapper.values())]
 
     # Make the CompoundColumn
     return CompoundColumn(
         input_columns=input_cols,
         output_columns=output_cols,
-        column_transform=transformation(input_names=[col.name for col in input_cols], output_name=ddict_col)
+        column_transform=transformation(
+            input_names=[col.name for col in input_cols],
+            output_name=column_info.name,
+        )
     )
 
 
-def radio_dropdown_column_factory(ddict, ddict_col):
+def radio_dropdown_column_factory(column_info):
     """Return a fully initiated column object based on the defintion in the ddict.
 
     Args:
-        ddict (DataFrame): A redcap data-dict loaded with ``load_data_dict``.
-        ddict_col (str): The name of the radio-type column to process.
+        column_info (RedCapColumnInfo): A RedCapColumnInfo object.
     """
 
     # ### Function to generate columns
@@ -156,21 +175,29 @@ def radio_dropdown_column_factory(ddict, ddict_col):
             name=name,
             dtype=(str, type(None)),
             unique=False,
-            validators=[valid_values],
-            recoders=[translate_column],
+            validators=[
+                valid_values,
+            ],
+            recoders=[
+                translate_column,
+            ],
         )
 
-    label_mapper = ccs_labels_to_mapper(ddict[ddict_col])
+    label_mapper = {}
+    label_mapper.update(column_info.options_labels)
     label_mapper.update({np.nan: None})
 
-    return build_column(name=ddict_col, labels=label_mapper.values())
+    return build_column(
+        name=column_info.name,
+        labels=label_mapper.values(),
+    )
 
 
-def yesno_column_factory(ddict_col):
+def yesno_column_factory(column_info):
     """Return a fully initiated "yesno" type column object.
 
     Args:
-        ddict_col (str): The name of the yesno-type column to process.
+        column_info (RedCapColumnInfo): A RedCapColumnInfo object.
     """
 
     def valid_values(series):
@@ -186,15 +213,22 @@ def yesno_column_factory(ddict_col):
     value_mapper = {
         "0": "NO",
         "1": "YES",
-        np.nan: np.nan,
+        np.nan: None,
     }
 
     return Column(
-        name=ddict_col,
+        name=column_info.name,
         dtype=(str, type(None)),
         unique=False,
-        validators=[valid_values],
-        recoders=[translate_column],
+        validators=[
+            valid_values,
+        ],
+        recoders=[
+            translate_column,
+        ],
+    )
+
+
 #TODO: Add custom range validators to column_object if the data is provided in the data_dict
 @dataclass(init=False)
 class RedCapColumnInfo(object):
@@ -275,4 +309,73 @@ class RedCapColumnInfo(object):
         }
 
         self.column_object = fieldtype_to_factory[self.field_type](self)
+
+
+def text_column_factory(column_info):
+    """Return a fully initiated column object based on the defintion in the ddict.
+
+    Args:
+        column_info (RedCapColumnInfo): A RedCapColumnInfo object.
+    """
+
+    validators = {
+        'time': [common.validate.istime],
+        'alpha_only': [common.validate.isalpha],
+        'date_ymd': [validate.date_format],
+        'date_mdy': [validate.date_format],
+        'date_dmy': [validate.date_format],
+        'integer': [],
+        'number': [],
+        'number_1dp': [],
+        'number_4dp': [],
+        np.nan: [],
+    }
+
+    recoders = {
+        'time': [common.recode.to_hour_minute],
+        'alpha_only': [common.recode.nan_to_none],
+        'date_ymd': [common.recode.nan_to_none],
+        'date_mdy': [common.recode.nan_to_none],
+        'date_dmy': [common.recode.nan_to_none],
+        'integer': [common.recode.nan_to_none],
+        'number': [common.recode.nan_to_none],
+        'number_1dp': [common.recode.nan_to_none],
+        'number_4dp': [common.recode.nan_to_none],
+        np.nan: [common.recode.nan_to_none],
+    }
+
+    dtype = {
+        'time': (dt.time, type(pd.NaT)),
+        'alpha_only': (str, type(None)),
+        'date_ymd': (str, type(None)),
+        'date_mdy': (str, type(None)),
+        'date_dmy': (str, type(None)),
+        'integer': (int, type(None)),
+        'number': (float, type(None)),
+        'number_1dp': (float, type(None)),
+        'number_4dp': (float, type(None)),
+        np.nan: (str, type(None)),
+    }
+
+    return Column(
+        name=column_info.name,
+        dtype=dtype[column_info.validation_kind],
+        unique=False,
+        validators=validators[column_info.validation_kind],
+        recoders=recoders[column_info.validation_kind],
+    )
+
+
+def calc_column_factory(column_info):
+    """Return a fully initiated column object based on the defintion in the ddict.
+
+    Args:
+        column_info (RedCapColumnInfo): A RedCapColumnInfo object.
+    """
+    return Column(
+        name=column_info.name,
+        dtype=(float, type(None)),
+        unique=False,
+        validators=[validate.valid_float],
+        recoders=[common.recode.nan_to_none],
     )
