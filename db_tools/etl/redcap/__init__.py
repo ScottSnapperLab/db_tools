@@ -21,11 +21,27 @@ def load_data_dict(path):
 
 def ccs_labels_to_mapper(series):
     """Convert the "Choices, Calculations, OR Slider Labels" string into dict."""
-    labels = series["Choices, Calculations, OR Slider Labels"]
-    choices = [i.strip() for i in labels.split("|")]
-    split_choices = [c.split(',', maxsplit=1) for c in choices]
-    stripped_split_choices = [[i.strip() for i in l] for l in split_choices]
-    return {key: val for key, val in stripped_split_choices}
+
+    def clean_key(key):
+        key = key.replace('-', '_').lower()
+
+        return key
+
+    def clean_value(value):
+        value = value.replace("<br><sup>", "SPLIT_HERE")
+        value = value.split("SPLIT_HERE")[0]
+        value = value.strip()
+
+        return value
+
+    try:
+        labels = series["Choices, Calculations, OR Slider Labels"]
+        choices = [i.strip() for i in labels.split("|")]
+        split_choices = [c.split(',', maxsplit=1) for c in choices]
+        stripped_split_choices = [[i.strip() for i in l] for l in split_choices]
+        return {clean_key(key): clean_value(val) for key, val in stripped_split_choices}
+    except (AttributeError, ValueError):
+        return None
 
 
 def checkbox_column_factory(ddict, ddict_col):
