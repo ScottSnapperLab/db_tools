@@ -1,4 +1,5 @@
 """Provide code to ETL redcap data dumps."""
+from collections import OrderedDict
 import pandas as pd
 import numpy as np
 
@@ -14,9 +15,18 @@ from . import recode
 from . import validate
 
 
-def load_data_dict(path):
-    """Load a redcap data_dict file and transpose it so that column names represent actual column names."""
-    return pd.read_csv(path).set_index("Variable / Field Name").T
+def digest_ddict(ddict):
+    """Return OrderedDict of RedCapColumnInfo objects.
+
+    Args:
+        ddict (pd.DataFrame): Loaded/recoded redcap data dictionary.
+    """
+    ddict = ddict.T[ddict.T["Field Type"] != 'descriptive'].T
+
+    redcap_info_objs = OrderedDict()
+    for info_obj in [RedCapColumnInfo(ddict[col_name]) for col_name in ddict.columns]:
+        redcap_info_objs[info_obj.name] = info_obj
+    return redcap_info_objs
 
 
 def ccs_labels_to_mapper(series):
