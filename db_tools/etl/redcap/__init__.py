@@ -71,84 +71,87 @@ def checkbox_column_factory(column_info):
     """
 
     # ### Transformation function
-    def transformation(input_names, output_name):
+    # (here we just select the columns we want to make it through and re-name them)
+    def transformation():
         def func(df):
-            cols = Box()
-            cols[output_name] = df.apply(lambda row: tuple([row[col_name] for col_name in input_names]), axis=1)
 
-            new_columns = pd.DataFrame(cols)
+            column_names = [col for col in df.columns if col.startswith(f"{column_info.name}___")]
+
+            rename_cols = {
+                f"{column_info.name}___{k}": f"{column_info.name}___{v}"
+                for k, v in column_info.options_labels.items()
+            }
+
+            new_columns = df[column_names].rename(columns=rename_cols)
             return new_columns
 
         return func
 
     # ### Function to generate input columns
-    def input_column(col_n, label):
+    def input_column(col_n):
         """Return initiated Column obj."""
 
         def valid_values(series):
-            valid = [None, label]
+            valid = [np.nan, True, False]
             return series.apply(is_subset, ref_set=valid)
 
         def translate_column(series):
             def rcode(x):
-                mapping = {0: None, 1: label}
-                return mapping[x]
+                mapping = {
+                    0: False,
+                    1: True,
+                    None: np.nan,
+                }
+                try:
+                    return mapping[x]
+                except KeyError as err:
+                    if pd.isna(err.args[0]):
+                        return np.nan
+                    else:
+                        raise
 
             return series.apply(rcode)
 
         return Column(
             name=f"{column_info.name}___{col_n}",
-            dtype=(str, type(None)),
+            dtype=(bool, type(np.nan)),
             unique=False,
             validators=[
                 valid_values,
             ],
             recoders=[
-                common.recode.to_one_or_zero,
+                common.recode.to_int_or_nan,
                 translate_column,
             ]
         )
 
-    # ### Function to generate output columns
-    def output_column(name, labels):
+    # # ### Function to generate output columns
+    def output_column(col_n):
         """Return initiated Column obj."""
 
         def valid_values(series):
-            valid = labels
+            valid = [np.nan, True, False]
             return series.apply(is_subset, ref_set=valid)
 
         return Column(
-            name=name,
-            dtype=list,
+            name=f"{column_info.name}___{column_info.options_labels[col_n]}",
+            dtype=(bool, type(np.nan)),
             unique=False,
             validators=[
                 valid_values,
             ],
-            recoders=[
-                common.recode.setify_drop_nones,
-            ],
+            recoders=[]
         )
 
-    label_mapper = {}
-    label_mapper.update(column_info.options_labels)
-
-    # Make input columns
+    # Make input/output columns
     input_cols = []
-    for col_n, label in label_mapper.items():
-        input_cols.append(input_column(col_n, label))
-
-    # Make output column
-    output_cols = [output_column(name=column_info.name, labels=label_mapper.values())]
+    output_cols = []
+    for col_n in column_info.options_labels.keys():
+        input_cols.append(input_column(col_n))
+        output_cols.append(output_column(col_n))
 
     # Make the CompoundColumn
-    return CompoundColumn(
-        input_columns=input_cols,
-        output_columns=output_cols,
-        column_transform=transformation(
-            input_names=[col.name for col in input_cols],
-            output_name=column_info.name,
-        )
-    )
+    return CompoundColumn(input_columns=input_cols, output_columns=output_cols, column_transform=transformation())
 
 
 def radio_dropdown_column_factory(column_info):
@@ -380,3 +383,45 @@ def calc_column_factory(column_info):
         validators=[validate.valid_float],
         recoders=[common.recode.nan_to_none],
     )
+
+
+def build_checkbox_df(df, id_vars, base_col_name, sep):
+    """Return dataframe with columns representing id_vars + base_col_name.
+
+    Column named base_col_name contains answers to the checkbox question as values.
+
+    Args:
+        df (pd.DataFrame): Full data dataframe.
+        id_vars (str or list): Name of df.columns to use as the ID columns.
+        base_col_name (str): Base column name.
+        sep (str): Separation string bt the base_name and the answer suffix.
+    """
+    if isinstance(id_vars, str):
+        id_vars = [id_vars]
+
+    checkbox_df = df[id_vars + [c for c in df.columns if c.startswith(base_col_name)]].dropna()
+
+    melted = checkbox_df.melt(
+        id_vars=id_vars,
+        value_vars=None,
+        var_name=base_col_name,
+        value_name='answer',
+        col_level=None,
+    ).sort_values(by=id_vars)
+
+    result = melted[melted["answer"]].drop('answer', axis=1)
+    result[base_col_name] = result[base_col_name].apply(lambda value: value.split(sep)[-1])
+
+    return result
+
+
+def process_checkboxes(df, col_infos):
+
+    checkboxes = [c.name for c in col_infos.values() if c.field_type == "checkbox"]
+
+    dfs = {
+        base_name: build_checkbox_df(df=df, id_vars="subid", base_col_name=base_name, sep="___")
+        for base_name in checkboxes
+    }
+
+    return Box(dfs)
