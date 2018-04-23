@@ -1,11 +1,15 @@
 """Provide code to recast values from one type (usually str) to another."""
+import pandas as pd
 import pendulum as pen
 
 
 # Recasting functions
 def as_time(value):
     """Return value recast as time."""
-    return pen.parse(value).time()
+    try:
+        return pen.parse(value).time()
+    except TypeError:
+        return pd.NaT
 
 
 def as_string(value):
@@ -15,7 +19,10 @@ def as_string(value):
 
 def as_date(value):
     """Return value recast as date."""
-    return pen.parse(value).date()
+    try:
+        return pen.parse(value).date()
+    except TypeError:
+        return pd.NaT
 
 
 def as_integer(value):
