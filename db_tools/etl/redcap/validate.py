@@ -42,3 +42,16 @@ def seven_chs(series):
     '''test that not None-type data items are seven characters long'''
     return series.str.len() == 7
 
+def valid_registry_event_name(series):
+    valid = [
+        'registration_visit_arm_1',
+        'baseline_visit_arm_1',
+        'followup_visit_1_arm_1',
+        'followup_visit_2_arm_1',
+        'followup_visit_3_arm_1',
+        'followup_visit_4_arm_1',
+        'surgeries_arm_1',
+        'hospitalizations_arm_1',
+    ]
+
+    return series.isin(valid)
