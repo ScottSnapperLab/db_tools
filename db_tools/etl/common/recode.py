@@ -18,9 +18,9 @@ def to_str(series):
 
 
 def to_one_or_zero(series):
-    """Recode series values to either [0,1,None]."""
-    valid_vals = set([0, 1])
-    series = series.fillna(0).astype(int)
+    """Recode series values to either [0,1,np.nan]."""
+    valid_vals = set([0, 1, np.nan])
+    # series = series.fillna(0).astype(int)
 
     obs_vals = set(series.unique())
 
