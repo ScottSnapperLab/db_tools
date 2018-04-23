@@ -3,8 +3,9 @@
 
 # Imports
 import pandas as pd
+import numpy as np
 
-from db_tools.etl import time_string_to_time
+import db_tools.etl as etl
 
 
 def nan_to_none(series):
@@ -61,4 +62,4 @@ def setify_drop_nones(series):
 def to_hour_minute(series):
     """Convert a string to a time object."""
 
-    return series.apply(time_string_to_time)
+    return series.apply(etl.time_string_to_time)
