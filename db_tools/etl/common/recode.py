@@ -17,6 +17,23 @@ def to_str(series):
     return series.astype(str)
 
 
+def to_int_or_nan(series):
+    """Return series with values converted to int (if possible) allowing for NaNs."""
+
+    def recode(value):
+        try:
+            return etl.recast.as_integer(value)
+        except ValueError as err:
+            if err.args[0] == "cannot convert float NaN to integer":
+                return np.nan
+            elif err.args[0] == "invalid literal for int() with base 10: 'nan'":
+                return np.nan
+            else:
+                raise
+
+    return series.apply(recode)
+
+
 def to_one_or_zero(series):
     """Recode series values to either [0,1,np.nan]."""
     valid_vals = set([0, 1, np.nan])
