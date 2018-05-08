@@ -2,6 +2,32 @@
 History
 *******
 
+v0.2.0 / 2018-05-08
+===================
+
+  * adjusted pipfile and etl
+  * etl.redcap: changed checkbox_column_factory:
+  * etl.redcap.loaders: added load_registry
+  * etl.redcap.validate: + valid_registry_event_name
+  * etl.recast: as_time/as_date ret NaT if TypeError
+  * etl.common.recode: import whole etl module
+  * etl.common.recode: added to_int_or_nan
+  * etl.common.recode: to_one_or_zero None -> np.NaN
+  * tasks.py: proj automation to replace make
+  * tox config converted to pipenv
+  * setup.py uses pipenv generated reqs file
+  * moved time_string_to_time to etl.__init__
+  * reformatting
+  * etl.redcap: uses etl.recast
+  * etl.common: import time_string_to_time
+  * etl.recast: created
+  * Makefile: install generates new req file for linked install
+  * Makefile: removed bootstrapping pipenv target
+  * began removing conda cruft from Makefile
+  * updated tests
+  * ignore pytest caches
+  * ignore standard req files since we use pipenv
+
 v0.1.0 / 2018-03-21
 ===================
 
