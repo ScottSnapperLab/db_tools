@@ -24,17 +24,20 @@ jupyter = "*"
 jupyterlab = "*"
 widgetsnbextension = "*"
 jupyter-contrib-nbextensions = "*"
-rope = "*"
 pip = "*"
 pendulum = "*"
+toolz = "*"
+cloudpickle = "*"
 
 
 [dev-packages]
 
+rope = "*"
+line-profiler = "*"
 mypy = "*"
 bumpversion = "*"
 watchdog = "*"
-"flake8" = "*"
+flake8 = "*"
 tox = "*"
 coverage = "*"
 sphinx = "*"
@@ -45,6 +48,7 @@ sphinx-rtd-theme = "*"
 pydocstyle = "*"
 pylint = "*"
 yapf = "*"
+pudb = "*"
 
 
 [requires]
