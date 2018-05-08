@@ -52,7 +52,7 @@ setup_requirements = ["pytest-runner"]
 test_requirements = test_requirements = ["pytest"]
 setup(
     name='db_tools',
-    version='0.1.0',
+    version='0.2.0',
     description=
     "A set of command line executable and script importable tools to aid the Snapper Lab in managing and combining RedCap, FreezerPro, and other databases.",
     long_description=readme + '\n\n' + history,
